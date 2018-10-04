@@ -1,0 +1,3 @@
+# tf_puzzle
+# I want to use DDPG to play this game of lighting puzzles.
+# But I am learning what is DDPG now ...
