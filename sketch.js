@@ -1,4 +1,4 @@
-let num = 12;
+let num = 8;
 let w_grid,h_grid;
 let grid_v = new Array(num);
 let action_count = 0;
