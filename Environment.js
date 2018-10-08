@@ -13,12 +13,13 @@ class Environment{
   }
 
   step(a){
-    let index_x = a % num;
+    let index_x = int(a % num);
     let index_y = floor(a/num)-1;
     this.turn(index_x, index_y);
     this.judgment();
     this.draw_grid();
     this.action_count += 1;
+    //console.log(this.action_count);
   }
 
   action_random(){

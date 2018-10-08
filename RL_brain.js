@@ -76,16 +76,13 @@ class DQN{
       let observation = tf.tensor([observation_]);
 
       if (random(1) < this.epsilon){
-        let actions_value = this.eModel.predict(observation);
-        this.action = tf.argMax(actions_value).dataSync();// Unsolved
+        let actions_value = this.eModel.predict(observation,{batchSize: 1});
+        this.action = tf.argMax(actions_value, 1).dataSync()[0];
       } else {
-        this.action = floor(radom(this.action_num - 0.001));
+        this.action = floor(random(this.action_num - 0.001));
       }
-
-
     });
-    this.action;
-    console.log(this.action);
+    return this.action;
   }
 
   replace_target_params(){
@@ -93,35 +90,38 @@ class DQN{
   }
 
   learn(){
-    if(this.learn_step_counter & ths.replace_target_iter == 0){
+    if(this.learn_step_counter & this.replace_target_iter == 0){
       this.replace_target_params();
     }
 
     let sample_indexs = new Array();
     let batch_memory = new Array();
-    let ss,s_s,as,rs = new Array();
+    let ss = new Array();
+    let s_s = new Array();
+    let as = new Array();
+    let rs = new Array();
     if(this.memory_counter > this.memory_size){
       for (let i = 0; i < this.batch_size; i++){
-        let sample_index = random(this.memory_size);
+        let sample_index = floor(random(this.memory_size-0.001));
         sample_indexs.push(sample_index);
       }
     } else {
       for (let i = 0; i < this.batch_size; i++){
-        let sample_index = random(this.memory_size);
+        let sample_index = floor(random(this.memory_counter-0.001));
         sample_indexs.push(sample_index);
       }
     }
     for (let i = 0; i < this.batch_size; i++){
-       ss.push(this.memory.slice(0,this.features_num));
-       s_s.push(this.memory.slice(this.features_num, this.features_num*2));
-       as.push(this.memory.slice(this.features_num*2));
-       rs.push(this.memory.slice(this.features_num*2+1));
+      ss.push(this.memory[sample_indexs[i]].slice(0,this.features_num));
+      s_s.push(this.memory[sample_indexs[i]].slice(this.features_num, this.features_num*2));
+      as.push(this.memory[sample_indexs[i]].slice(this.features_num*2, this.features_num*2+1));
+      rs.push(this.memory[sample_indexs[i]].slice(this.features_num*2+1, this.features_num*2+2));
     }
     this.s = tf.tensor(ss,[this.batch_size,this.features_num]);
     this.s_ = tf.tensor(s_s,[this.batch_size,this.features_num]);
     this.a = tf.tensor(as,[this.batch_size,1]);
     this.r = tf.tensor(rs,[this.batch_size,1]);
-    train();
+    this.train();
   }
 
   async train(){ //No translation yet
