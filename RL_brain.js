@@ -16,14 +16,16 @@ class DQN{
 
     this.s;
     this.s_;
-    this.a;
+    this.a = new Array();
     this.r;
     this.xs;
     this.ys;
     this.action;
-
+    this.q_targets = new Array();
+    this.q_eval_wrt_a_s = new Array();
     this.learn_step_counter = 0;
     this.memory_counter = 0;
+
 
     this.build_network();
   }
@@ -53,15 +55,6 @@ class DQN{
     }).apply(t1);
     this.tModel = tf.model({inputs:this.xs, outputs:this.q_next});
 
-
-    /*  //Do not understand
-    const q_target = this.r + this.gamma * this.q_next.max(1);
-    this.q_target = q_target;
-    const a_indices = tf.stack([tf.range(0,this.a.shape[0]), this.a], 1);
-    this.q_eval_wrt_a = q_eval.gather(a_indices);
-    this.loss = tf.mean( tf.squaredDifference(this.q_target, this.q_eval_wrt_a));
-    this._train_op = tf.train.rmsprop(this.lr).minimize(this.loss);
-    */
   }
 
   store_transition(s, s_, a, r){
@@ -114,18 +107,32 @@ class DQN{
     for (let i = 0; i < this.batch_size; i++){
       ss.push(this.memory[sample_indexs[i]].slice(0,this.features_num));
       s_s.push(this.memory[sample_indexs[i]].slice(this.features_num, this.features_num*2));
-      as.push(this.memory[sample_indexs[i]].slice(this.features_num*2, this.features_num*2+1));
+      //as.push(this.memory[sample_indexs[i]].slice(this.features_num*2, this.features_num*2+1));
+      this.a.push(this.memory[sample_indexs[i]].slice(this.features_num*2, this.features_num*2+1))
       rs.push(this.memory[sample_indexs[i]].slice(this.features_num*2+1, this.features_num*2+2));
     }
     this.s = tf.tensor(ss,[this.batch_size,this.features_num]);
     this.s_ = tf.tensor(s_s,[this.batch_size,this.features_num]);
-    this.a = tf.tensor(as,[this.batch_size,1]);
+    //this.a = tf.tensor(as,[this.batch_size,1]);
     this.r = tf.tensor(rs,[this.batch_size,1]);
     this.train();
   }
 
   async train(){ //No translation yet
+    for(let i = 0; i < this.batch_size; i++){
+      const q_target = this.tModel.predict( this.s_.gather([i]) ).max(1).mul(this.gamma).add(this.r);
+      this.q_targets.push(q_target);
 
+      //const a_indices = tf.stack([tf.range(0,this.a.shape[0]), this.a], 1);
+      this.q_eval_wrt_a_s.push( this.eModel.predict( this.s.gather([i]) ).gather(this.a[i]) );
+    }
+    //console.log(this.q_targets);
+    this.q_target = tf.stack(this.q_targets);
+    this.q_eval_wrt_a = tf.stack(this.q_eval_wrt_a_s);
+    this.loss = tf.mean( tf.squaredDifference(this.q_target, this.q_eval_wrt_a));
+    tf.train.rmsprop(this.lr).minimize(this.loss);
+    this.q_targets = new Array();
+    this.q_eval_wrt_a_s = new Array();
   }
 
 

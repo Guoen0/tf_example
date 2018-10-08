@@ -5,7 +5,7 @@ let env = new Environment(num);
 let step = 0;
 function setup() {
   createCanvas(500,500);
-  frameRate(60);
+  frameRate(2);
   w_grid = width/num;
   h_grid = height/num;
   env.init_grid();
