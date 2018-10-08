@@ -4,21 +4,29 @@ class Environment{
     for (let i = 0; i < num; i++){
       this.grid_v[i] = new Array(num);
     }
+    this.state = new Array(num*num);
+    this.next_state = new Array(num*num);
+    this.reward;
+    this.action;
     this.action_count = 0;
-    this.state = this.grid_v;
-    this.reward = 0;
+    this.is_finish = false;
   }
 
-  action(a){
-    let index_x = a[0];
-    let index_y = a[1];
+  step(a){
+    let index_x = a % num;
+    let index_y = floor(a/num)-1;
     this.turn(index_x, index_y);
+    this.judgment();
+    this.draw_grid();
+    this.action_count += 1;
   }
 
   action_random(){
     let index_x = floor(random(num-0.0001));
     let index_y = floor(random(num-0.0001));
     this.turn(index_x, index_y);
+    this.judgment();
+    this.draw_grid();
     this.action_count += 1;
     console.log(this.action_count);
   }
@@ -40,6 +48,8 @@ class Environment{
         }
       }
     }
+    this.is_finish = false;
+    this.action_count = 0;
   }
   judgment(){
     let count = 0;
@@ -47,15 +57,26 @@ class Environment{
       for(let j = 0; j < num; j++){
         if(this.grid_v[i][j]){
           count += 1;
-          this.state[i][j] = 1;
+          this.next_state[i + j*num] = 1;
         } else {
-          this.state[i][j] = 0;
+          this.next_state[i + j*num] = 0;
         }
       }
     }
-    this.reward = count;
+    this.reward = count/(num*num);
     if(count >= num*num){
       this.victory();
+    }
+  }
+  get_current_state(){
+    for (let i = 0; i < num; i++){
+      for(let j = 0; j < num; j++){
+        if(this.grid_v[i][j]){
+          this.state[i + j*num] = 1;
+        } else {
+          this.state[i + j*num] = 0;
+        }
+      }
     }
   }
   draw_grid(){
@@ -75,5 +96,6 @@ class Environment{
   victory(){
     noLoop();
     console.log("YOU WIN!!!");
+    this.is_finish = true;
   }
 }
