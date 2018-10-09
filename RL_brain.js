@@ -7,8 +7,8 @@ class DQN{
 
     this.features_num = num*num;
     this.action_num = num*num;
-    this.memory_size = 500;
-    this.batch_size = 32;
+    this.memory_size = 100;
+    this.batch_size = 5;
     this.memory = new Array(this.memory_size);
     for (let i = 0; i < this.memory_size; i++){
       this.memory[i] = new Array(this.features_num*2+2);
@@ -26,6 +26,7 @@ class DQN{
     this.learn_step_counter = 0;
     this.memory_counter = 0;
 
+    this.optimizer = tf.train.adam(this.lr);
 
     this.build_network();
   }
@@ -67,7 +68,6 @@ class DQN{
   choose_action(observation_){
     tf.tidy(() => {
       let observation = tf.tensor([observation_]);
-
       if (random(1) < this.epsilon){
         let actions_value = this.eModel.predict(observation,{batchSize: 1});
         this.action = tf.argMax(actions_value, 1).dataSync()[0];
@@ -92,7 +92,9 @@ class DQN{
     let ss = new Array();
     let s_s = new Array();
     let as = new Array();
+    this.a = new Array();
     let rs = new Array();
+
     if(this.memory_counter > this.memory_size){
       for (let i = 0; i < this.batch_size; i++){
         let sample_index = floor(random(this.memory_size-0.001));
@@ -109,30 +111,40 @@ class DQN{
       s_s.push(this.memory[sample_indexs[i]].slice(this.features_num, this.features_num*2));
       //as.push(this.memory[sample_indexs[i]].slice(this.features_num*2, this.features_num*2+1));
       this.a.push(this.memory[sample_indexs[i]].slice(this.features_num*2, this.features_num*2+1))
+
       rs.push(this.memory[sample_indexs[i]].slice(this.features_num*2+1, this.features_num*2+2));
     }
-    this.s = tf.tensor(ss,[this.batch_size,this.features_num]);
-    this.s_ = tf.tensor(s_s,[this.batch_size,this.features_num]);
-    //this.a = tf.tensor(as,[this.batch_size,1]);
-    this.r = tf.tensor(rs,[this.batch_size,1]);
-    this.train();
+    tf.tidy(() => {
+      this.s = tf.tensor(ss,[this.batch_size,this.features_num]);
+      this.s_ = tf.tensor(s_s,[this.batch_size,this.features_num]);
+      //this.a = tf.tensor(as,[this.batch_size,1]);
+      this.r = tf.tensor(rs,[this.batch_size,1]);
+
+      this.train();
+    });
   }
 
-  async train(){ //No translation yet
-    for(let i = 0; i < this.batch_size; i++){
-      const q_target = this.tModel.predict( this.s_.gather([i]) ).max(1).mul(this.gamma).add(this.r);
-      this.q_targets.push(q_target);
 
-      //const a_indices = tf.stack([tf.range(0,this.a.shape[0]), this.a], 1);
-      this.q_eval_wrt_a_s.push( this.eModel.predict( this.s.gather([i]) ).gather(this.a[i]) );
-    }
-    //console.log(this.q_targets);
-    this.q_target = tf.stack(this.q_targets);
-    this.q_eval_wrt_a = tf.stack(this.q_eval_wrt_a_s);
-    this.loss = tf.mean( tf.squaredDifference(this.q_target, this.q_eval_wrt_a));
-    tf.train.rmsprop(this.lr).minimize(this.loss);
-    this.q_targets = new Array();
-    this.q_eval_wrt_a_s = new Array();
+  loss(q_target, q_eval_wrt_a){
+      const TD_error = tf.mean( tf.squaredDifference(q_target, q_eval_wrt_a) );
+      TD_error.print();
+      return TD_error;
+  }
+
+  predict_q_target(s_, i){
+    const q_target = this.tModel.predict( s_.gather([i]) ).max(1).mul(this.gamma).add(this.r.gather([i]));
+    return q_target;
+  }
+
+  async train(){
+
+      for(let i = 0; i < this.batch_size; i++){
+        const q_eval_ = this.eModel.predict( this.s.gather([i]) );
+        this.q_eval_wrt_a = q_eval_.gather(this.a[i],1).reshape([1,1]);
+        this.optimizer.minimize(() => this.loss(this.predict_q_target(this.s_, i), this.q_eval_wrt_a));
+        q_eval_.dispose();
+      }
+
   }
 
 

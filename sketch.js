@@ -5,7 +5,7 @@ let env = new Environment(num);
 let step = 0;
 function setup() {
   createCanvas(500,500);
-  frameRate(2);
+  frameRate(60);
   w_grid = width/num;
   h_grid = height/num;
   env.init_grid();
@@ -23,7 +23,7 @@ function draw() {
   RL.store_transition(env.state, env.next_state ,env.action ,env.reward);
   env.state = env.next_state;
 
-  if (step > 200 || step % 5 == 0){
+  if (step > 200 && step % 5 == 0){
     RL.learn();
   }
 
