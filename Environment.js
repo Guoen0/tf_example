@@ -65,7 +65,7 @@ class Environment{
         }
       }
     }
-    this.reward = count/(num*num);
+    this.reward = pow(count,2)/(pow(num,4));
     if(count >= num*num){
       this.victory();
     }
