@@ -15,7 +15,7 @@ class Environment{
   step(a){
     this.action = a;
     let index_x = int(a % num);
-    let index_y = floor(a/num)-1;
+    let index_y = floor(a/num);
     this.turn(index_x, index_y);
     this.judgment();
     this.draw_grid();

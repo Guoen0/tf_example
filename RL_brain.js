@@ -141,6 +141,7 @@ class DQN{
 
   predict_q_target(s_, i){
     const q_target = this.tModel.predict( s_.gather([i]) ).max(1).mul(this.gamma).add(this.r.gather([i]));
+    //tf.stop_gradient??;
     return q_target;
   }
 

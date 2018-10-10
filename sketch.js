@@ -46,7 +46,7 @@ function draw() {
 // Human play
 function mousePressed(){
   let index_x = floor(mouseX/w_grid);
-  let index_y = floor(mouseY/h_grid) + 1;
+  let index_y = floor(mouseY/h_grid);
   env.step(index_x + index_y*num);
 }
 */
