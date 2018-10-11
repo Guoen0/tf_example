@@ -1,8 +1,14 @@
-let num = 5;
+let num = 4;
 let w_grid,h_grid;
 let RL = new DQN();
 let env = new Environment(num);
 let step = 0;
+let start_l_step = 500;
+
+
+let lossP;
+let rewardP;
+let epsilonSlider;
 function setup() {
   createCanvas(500,500);
   frameRate(60);
@@ -10,9 +16,13 @@ function setup() {
   h_grid = height/num;
   env.init_grid();
 
+  lossP = createP('loss');
+  rewardP = createP('Reward');
+  epsilonSlider = createSlider(0, 100);
 }
 
 function draw() {
+  interaction();
   background(51);
 
   if (step == 0){
@@ -25,13 +35,17 @@ function draw() {
   // run
   env.step(RL.choose_action(env.state));
   RL.store_transition(env.state, env.next_state ,env.action ,env.reward);
+  RL.replace_target_params();
   env.state = env.next_state;
+  rewardP.html('Reward: ' + env.reward);
   // train
-  if (step > 200 && step % 5 == 0){
-    RL.learn();
+  if (step > start_l_step && step % 1 == 0){
+    for(i = 0; i < RL.iteration; i++){
+      RL.learn();
+    }
   }
 
-
+  console.log('step');
   step += 1;
   if(env.is_finish){
     env.init_grid();
@@ -41,6 +55,9 @@ function draw() {
   //console.log(env.reward);
 }
 
+function interaction(){
+  RL.epsilon = epsilonSlider.value()/100;
+}
 
 /*
 // Human play

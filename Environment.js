@@ -41,7 +41,7 @@ class Environment{
     if(y-1 >= 0){ this.grid_v[x][y-1] = !this.grid_v[x][y-1] };
   }
   init_grid(){
-    for (let n = 0; n < 5; n++){
+    for (let n = 0; n < 1; n++){
       for (let i = 0; i < num; i++){
         for(let j = 0; j < num; j++){
           if(random(1)<0.5){
@@ -65,9 +65,14 @@ class Environment{
         }
       }
     }
-    this.reward = pow(count,2)/(pow(num,4));
+    this.reward = pow(count,2)/(pow(num,3));
+    // Intervention
+    if (this.action_pre == this.action){
+      this.reward = - 1;
+    }
     if(count >= num*num){
       this.victory();
+      this.reward = 20;
     }
   }
   get_current_state(){
@@ -96,7 +101,7 @@ class Environment{
     }
   }
   victory(){
-    noLoop();
+    //noLoop();
     console.log("YOU WIN!!!");
     this.is_finish = true;
   }
