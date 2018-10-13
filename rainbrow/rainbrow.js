@@ -3,9 +3,18 @@ let num = 3;
 let env;
 let step = 0;
 let game_step = 2;
-let start_l_step = 40;
+let start_l_step = 20;
 
-RL = new DQN();
+let lr = 0.005;
+let GAMMA = 0.9;
+let epsilon = 0.9;
+let features_num = num*3 + 2;
+let action_num = 3;
+let units_num = 16;
+
+RL_A = new Actor();
+RL_C = new Critic();
+let g_td_error;
 
 let rewardP;
 let lifeP;
@@ -19,8 +28,10 @@ let button_S;
 let is_human = false;
 let is_stop = false;
 let is_justRun = false;
+let is_train = true;
 
-let fr = 60;
+let fr = 10;
+
 function setup() {
   createCanvas(500,500);
   colorMode(HSB,360);
@@ -48,47 +59,38 @@ function draw() {
   if (!is_stop){
 
 
-
     if(!is_human){
       if(step % game_step == 0){
-        env.step(RL.choose_action(env.state));
+        env.step(RL_A.choose_action(env.state));
       }
     }
+
 
     env.update();
 
-    if(step % game_step == 0){
-      RL.store_transition(env.state, env.state_next ,env.action ,env.reward);
-      env.state = env.state_next;
-    }
 
-    if(!is_justRun){
-      if(!is_human){
-        if(step % game_step == 0){
-          if (step > start_l_step && step % 4 == 0){
-            for(i = 0; i < RL.iteration; i++){
-              RL.replace_target_params();
-              RL.learn();
-            }
-          }
-        }
+    if(is_train){
+      if( step > start_l_step && step % game_step == 0){
+        g_td_error =  RL_C.learn(env.state, env.state_next, env.reward);
+        RL_A.learn(env.state, env.action, g_td_error);
       }
     }
-
 
 
     if(env.is_dead){
       env.init();
     }
+
+
     // print
     rewardP.html("Reward: " + env.reward.toFixed(1));
     lifeP.html("Life: " + env.life.toFixed(1));
     maxLifeP.html("MaxLife: " + env.maxLife.toFixed(1));
     deathP.html("Death :" + env.death);
-    td_error_P.html("TD_error :" + RL.TD_error);
+    td_error_P.html("TD_error :" + g_td_error);
+    step += 1;
   }
 
-  step += 1;
 }
 
 
@@ -97,19 +99,23 @@ function human(){
   is_human = true;
   is_stop = false;
   is_justRun = false;
+  is_train = false;
 }
 function train_robot(){
   is_human = false;
   is_stop = false;
   just_run = false;
+  is_train = true;
 }
 function stop_(){
   is_stop = true;
   is_justRun = false;
+  is_train = false;
 }
 function just_run(){
   is_human = false;
   is_justRun = true;
+  is_train = false;
 }
 
 // Human play

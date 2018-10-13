@@ -38,8 +38,7 @@ class Environment{
     }
     this.agent[0] = width/2;
     this.agent[1] = floor(random(this.enemy_num-1.001))*this.grid_height*2 + this.grid_height*1.5;
-
-
+    //console.log(this.agent[1]);
     this.init_food();
     this.is_dead = false;
     this.action_count = 0;
