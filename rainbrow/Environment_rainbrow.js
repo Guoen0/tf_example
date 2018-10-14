@@ -89,12 +89,7 @@ class Environment{
         this.enemies[i][2] = - this.get_random_speed();
       }
     }
-    if(this.agent[1] <= this.agent_width/2){
-      this.agent[1] = this.agent_width/2;
-    }
-    if(this.agent[1] >= height-this.agent_width/2){
-      this.agent[1] = height-this.agent_width/2;
-    }
+
   }
 
 
@@ -121,7 +116,7 @@ class Environment{
     this.food[2] = dist_f;
     this.reward = (0 - dist_f_abs/height)*0.1;
     if(dist_f_abs <= this.food_width/2+this.agent_width/2){
-      this.reward = 0.5;
+      this.reward = 0.2;
       this.satiety += 10;
       this.goal += 1;
       this.init_food();
@@ -131,10 +126,20 @@ class Environment{
       let dist_e = pow((this.enemies[i][0] - this.agent[0]), 2) + pow((this.enemies[i][1] - this.agent[1]), 2);
       this.enemies[i][3] = dist_e;
       if(dist_e <= pow(this.enemy_width/2+this.agent_width/2, 2)){
-        this.reward = -0.2;
+        this.reward = -0.5;
         this.go_dead();
       }
     }
+
+    if(this.agent[1] <= this.agent_width/2){
+      this.reward = -0.5;
+      this.go_dead();
+    }
+    if(this.agent[1] >= height-this.agent_width/2){
+      this.reward = -0.5;
+      this.go_dead();
+    }
+
 
     if(this.satiety <= -10){
       this.go_dead();

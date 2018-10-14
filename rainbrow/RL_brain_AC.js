@@ -3,6 +3,7 @@
 class Actor{
   constructor(){
     this.action;
+    this.action_prb = new Array(action_num);
     this.s;
     this.a;
     this.TD_error;
@@ -46,7 +47,8 @@ class Actor{
       let observation = tf.tensor([observation_]);
       let probs = this.predict_acts_prob(observation);
       //console.log("probs:")
-      probs.print();
+      this.action_prb[0] = probs.dataSync()[0];
+      this.action_prb[1] = probs.dataSync()[1];
       if(goal<20){
         this.action = tf.multinomial(probs,1).dataSync()[0];
       }else{

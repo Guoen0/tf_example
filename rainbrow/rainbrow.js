@@ -10,7 +10,7 @@ let GAMMA = 0.9;
 //let epsilon = 0.9;
 let features_num = 2 + num;
 let action_num = 2;
-let units_num = 16;
+let units_num = 32;
 let activation = 'sigmoid';
 
 RL_A = new Actor();
@@ -26,6 +26,7 @@ let deathP;
 let td_error_P;
 let exp_v_P;
 let v_v_P;
+let actionP;
 let button_MP;
 let button_RP;
 let button_dontL;
@@ -60,6 +61,7 @@ function setup() {
   td_error_P = createP("TD_error: 0");
   v_v_P = createP("v_: 0");
   exp_v_P = createP("exp_v: 0");
+  actionP = createP("action: ");
 }
 
 function draw() {
@@ -100,6 +102,9 @@ function draw() {
     td_error_P.html("  TD_error :" + g_td_error);
     exp_v_P.html("  exp_vr: " + RL_A.exp_v);
     v_v_P.html("  v_: " + RL_C.v_v);
+    if(RL_A.action_prb){
+      actionP.html("  action_prob: " + RL_A.action_prb[0].toFixed(6) + " ; " + RL_A.action_prb[1].toFixed(6));
+    }
     step += 1;
   }
 
