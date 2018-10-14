@@ -3,14 +3,14 @@ let num = 3;
 let env;
 let step = 0;
 let game_step = 2;
-let start_l_step = 10;
+let start_l_step = 0;
 
 let lr = 0.1;
 let GAMMA = 0.9;
 let epsilon = 0.9;
 let features_num = num*4 + 2 + 1;
 let action_num = 3;
-let units_num = 4;
+let units_num = 128;
 
 RL_A = new Actor();
 RL_C = new Critic();
@@ -30,7 +30,7 @@ let is_stop = false;
 let is_justRun = false;
 let is_train = true;
 
-let fr = 30;
+let fr = 60;
 function setup() {
   createCanvas(500,500);
   colorMode(HSB,360);
@@ -71,6 +71,8 @@ function draw() {
     if(is_train){
       if( step > start_l_step && step % game_step == 0){
         g_td_error =  RL_C.learn(env.state, env.state_next, env.reward);
+        console.log("td_error:");
+        console.log(g_td_error);
         RL_A.learn(env.state, env.action, g_td_error);
       }
     }
@@ -90,6 +92,8 @@ function draw() {
     td_error_P.html("TD_error :" + g_td_error);
     step += 1;
   }
+
+  console.log("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
 
 }
 

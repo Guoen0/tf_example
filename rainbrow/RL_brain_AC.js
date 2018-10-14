@@ -48,6 +48,7 @@ class Actor{
     tf.tidy(() =>{
       let observation = tf.tensor([observation_]);
       let probs = this.predict_acts_prob(observation);
+      console.log("probs:")
       probs.print();
       this.action = tf.multinomial(probs,1).dataSync()[0];
     });
@@ -59,6 +60,8 @@ class Actor{
       this.s = tf.tensor(s,[1,features_num]);
       this.a = a;
       this.TD_error = tf.tensor([td]);
+      this.s.print();
+      console.log("action: "+this.a);
       this.train();
     });
   }
@@ -68,7 +71,9 @@ class Actor{
   }
   get_exp_v(s){
     let indices = tf.tensor1d([this.a], 'int32');
-    const log_prob = tf.log( this.predict_acts_prob( s ).gather(indices,1) );
+    console.log("indices:");
+    indices.print();
+    const log_prob = tf.log( this.predict_acts_prob( s ).gather(indices,1).add(0.00001) );
     this.exp_v = log_prob.mul(this.TD_error).mean().mul(-1);
     return this.exp_v;
   }
@@ -76,9 +81,7 @@ class Actor{
   async train(){
     this.optimizer.minimize(() => this.get_exp_v( this.s ));
   }
-
 }
-
 
 
 
@@ -140,20 +143,26 @@ class Critic{
   }
 
   async train(){
+    //console.log("s_:");
+    //console.log(this.predict_v(this.s_));
     const v_ = this.predict_v(this.s_);
+
     this.optimizer.minimize(() => this.loss(this.predict_v( this.s ), v_));
   }
   loss(v, v_){
+    console.log("v_:");
+    v_.print();
     const loss = this.get_td_error(v, v_).square().mean();
     return loss;
   }
   get_td_error(v, v_){
-    const td_error = v_.mul(GAMMA).sub(v).add(this.r);
+    const td_error = tf.mul(v_, GAMMA).sub(v).add(this.r);
     this.TD_error = td_error.dataSync()[0];
     return td_error;
   }
   predict_v(s){
-    return this.cModel.predict( s );
+    const v = this.cModel.predict( s );
+    return v;
   }
 
 
