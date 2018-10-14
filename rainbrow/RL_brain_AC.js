@@ -45,33 +45,31 @@ class Actor{
   }
 
   choose_action(observation_){
-    tf.tidy(() => {
+    tf.tidy(() =>{
       let observation = tf.tensor([observation_]);
       let probs = this.predict_acts_prob(observation);
+      probs.print();
       this.action = tf.multinomial(probs,1).dataSync()[0];
     });
     return this.action;
   }
 
   learn(s, a, td){
-    tf.tidy(() => {
-      this.s = tf.concat([s]).expandDims(0);
+    tf.tidy(() =>{
+      this.s = tf.tensor(s,[1,features_num]);
       this.a = a;
-      this.TD_error = td;
+      this.TD_error = tf.tensor([td]);
       this.train();
     });
-    return this.exp_v;
   }
 
   predict_acts_prob(s){
-    const acts_prob = this.aModel.predict( s );
-    return acts_prob;
+    return  this.aModel.predict( s );
   }
   get_exp_v(s){
     let indices = tf.tensor1d([this.a], 'int32');
     const log_prob = tf.log( this.predict_acts_prob( s ).gather(indices,1) );
     this.exp_v = log_prob.mul(this.TD_error).mean().mul(-1);
-    this.exp_v;
     return this.exp_v;
   }
 
@@ -86,7 +84,7 @@ class Actor{
 
 class Critic{
   constructor(){
-    this.TD_error;
+    this.TD_error = tf.scalar(0);
     this.loss_value;
 
     this.s;

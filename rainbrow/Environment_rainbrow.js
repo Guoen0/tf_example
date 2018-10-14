@@ -1,7 +1,7 @@
 class Environment{
   constructor(){
     this.enemy_num = num;
-    this.enemy_params = 3;
+    this.enemy_params = 4;
     this.grid = this.enemy_num*2-1;
     this.grid_height = height/this.grid;
     this.enemies = new Array(this.enemy_num);
@@ -11,9 +11,9 @@ class Environment{
     this.enemy_height = this.grid_height*0.82;
     this.enemy_width = this.enemy_height;
 
-    this.food = new Array(2);
+    this.food = new Array(3);
     this.food_width = this.grid_height*0.2;
-    this.agent = new Array(this.enemy_params);
+    this.agent = new Array(2);
     this.agent_width = this.grid_height*0.5;
 
     this.reward = 0;
@@ -44,6 +44,7 @@ class Environment{
     this.action_count = 0;
     this.reward = 0;
     this.life = 0;
+    this.judgment();
     this.get_state_next();
     this.state = this.state_next;
   }
@@ -52,7 +53,7 @@ class Environment{
   }
   init_food(){
     this.food[0] = width/2;
-    this.food[1] = floor(random(this.grid-0.001))*this.grid_height + this.grid_height/2;
+    this.food[1] = floor(random(this.enemy_num-0.001))*this.grid_height*2 + this.grid_height/2;
   }
 
   update(){
@@ -105,27 +106,32 @@ class Environment{
       }
     }
     this.state_next.push(this.food[1]);
+    this.state_next.push(this.food[2]);
     this.state_next.push(this.agent[1]);
 
   }
 
 
+
+  ///////////////////////////////////////////////////////////////////////
   judgment(){
     if (this.action == 1) {
-      this.reward -= 0.1;
-    } else {
       this.reward -= 0.02;
+    } else {
+      this.reward -= 0.01;
     }
 
 
     let dist_f = abs(this.food[1] - this.agent[1]);
+    this.food[2] = dist_f;
     if(dist_f <= this.food_width/2+this.agent_width/2){
-      this.reward += 10;
+      this.reward += 5;
       this.init_food();
     }
 
     for(let i = 0; i < this.enemy_num; i++){
-      let dist_e = pow((this.enemies[i][0] - this.agent[0]), 2) + pow((this.enemies[i][1] - this.agent[1]), 2)
+      let dist_e = pow((this.enemies[i][0] - this.agent[0]), 2) + pow((this.enemies[i][1] - this.agent[1]), 2);
+      this.enemies[i][3] = dist_e;
       if(dist_e <= pow(this.enemy_width/2+this.agent_width/2, 2)){
         this.go_dead();
       }
@@ -134,8 +140,16 @@ class Environment{
     if(this.reward <= -5){
       this.go_dead();
     }
+
   }
 
+  go_dead(){
+    this.reward = -50;
+    this.is_dead = true;
+    this.death += 1;
+    background('red');
+    //console.log('YOU DEAD!!!');
+  }
 
   draw(){
     noStroke();
@@ -157,13 +171,5 @@ class Environment{
     fill('#FfeA65');
     ellipse(this.agent[0],this.agent[1],this.agent_width,this.agent_width);
 
-  }
-
-  go_dead(){
-    this.reward = -100;
-    this.is_dead = true;
-    this.death += 1;
-    background('red');
-    console.log('YOU DEAD!!!');
   }
 }

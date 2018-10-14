@@ -3,14 +3,14 @@ let num = 3;
 let env;
 let step = 0;
 let game_step = 2;
-let start_l_step = 20;
+let start_l_step = 10;
 
-let lr = 0.005;
+let lr = 0.1;
 let GAMMA = 0.9;
 let epsilon = 0.9;
-let features_num = num*3 + 2;
+let features_num = num*4 + 2 + 1;
 let action_num = 3;
-let units_num = 16;
+let units_num = 4;
 
 RL_A = new Actor();
 RL_C = new Critic();
@@ -30,8 +30,7 @@ let is_stop = false;
 let is_justRun = false;
 let is_train = true;
 
-let fr = 10;
-
+let fr = 30;
 function setup() {
   createCanvas(500,500);
   colorMode(HSB,360);
@@ -40,11 +39,11 @@ function setup() {
   env.init();
   env.update();
 
-  button_MP = createButton("Human try (robot can learn you)");
+  button_MP = createButton("Human try");
   button_MP.mousePressed(human);
   button_RP = createButton("Train robot");
   button_RP.mousePressed(train_robot);
-  button_dontL = createButton("Don't Learnning, just RUN");
+  button_dontL = createButton("just RUN");
   button_dontL.mousePressed(just_run);
   button_S = createButton("STOP");
   button_S.mousePressed(stop_);
@@ -76,6 +75,7 @@ function draw() {
       }
     }
 
+    env.state = env.state_next;
 
     if(env.is_dead){
       env.init();
