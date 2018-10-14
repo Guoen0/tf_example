@@ -1,3 +1,5 @@
+
+
 class Actor{
   constructor(){
     this.action;
@@ -16,30 +18,38 @@ class Actor{
 
     let h1 = tf.layers.dense({
       units: units_num,
-      activation: 'relu',
+      activation: activation,
       inputShape: [features_num],
     }).apply(this.xs);
     let h2 = tf.layers.dense({
       units: units_num,
-      activation: 'relu',
+      activation: activation,
     }).apply(h1);
     let h3 = tf.layers.dense({
       units: units_num,
-      activation: 'relu',
+      activation: activation,
     }).apply(h2);
     let h4 = tf.layers.dense({
       units: units_num,
-      activation: 'relu',
+      activation: activation,
     }).apply(h3);
     let h5 = tf.layers.dense({
       units: units_num,
-      activation: 'relu',
+      activation: activation,
     }).apply(h4);
+    let h6 = tf.layers.dense({
+      units: units_num,
+      activation: activation,
+    }).apply(h5);
+    let h7 = tf.layers.dense({
+      units: units_num,
+      activation: activation,
+    }).apply(h6);
 
     this.acts_prob = tf.layers.dense({
       units: action_num,
       activation: 'softmax',
-    }).apply(h5);
+    }).apply(h7);
     this.aModel = tf.model({inputs:this.xs, outputs:this.acts_prob});
 
   }
@@ -48,8 +58,8 @@ class Actor{
     tf.tidy(() =>{
       let observation = tf.tensor([observation_]);
       let probs = this.predict_acts_prob(observation);
-      console.log("probs:")
-      probs.print();
+      //console.log("probs:")
+      //probs.print();
       this.action = tf.multinomial(probs,1).dataSync()[0];
     });
     return this.action;
@@ -60,8 +70,8 @@ class Actor{
       this.s = tf.tensor(s,[1,features_num]);
       this.a = a;
       this.TD_error = tf.tensor([td]);
-      this.s.print();
-      console.log("action: "+this.a);
+      //this.s.print();
+      //console.log("action: "+this.a);
       this.train();
     });
   }
@@ -71,8 +81,8 @@ class Actor{
   }
   get_exp_v(s){
     let indices = tf.tensor1d([this.a], 'int32');
-    console.log("indices:");
-    indices.print();
+    //console.log("indices:");
+    //indices.print();
     const log_prob = tf.log( this.predict_acts_prob( s ).gather(indices,1).add(0.00001) );
     this.exp_v = log_prob.mul(this.TD_error).mean().mul(-1);
     return this.exp_v;
@@ -104,30 +114,38 @@ class Critic{
     this.xs = tf.input({shape:[features_num]});
     let h1 = tf.layers.dense({
       units: units_num,
-      activation: 'relu',
+      activation: activation,
       inputShape: [features_num],
     }).apply(this.xs);
     let h2 = tf.layers.dense({
       units: units_num,
-      activation: 'relu',
+      activation: activation,
     }).apply(h1);
     let h3 = tf.layers.dense({
       units: units_num,
-      activation: 'relu',
+      activation: activation,
     }).apply(h2);
     let h4 = tf.layers.dense({
       units: units_num,
-      activation: 'relu',
+      activation: activation,
     }).apply(h3);
     let h5 = tf.layers.dense({
       units: units_num,
-      activation: 'relu',
+      activation: activation,
     }).apply(h4);
+    let h6 = tf.layers.dense({
+      units: units_num,
+      activation: activation,
+    }).apply(h5);
+    let h7 = tf.layers.dense({
+      units: units_num,
+      activation: activation,
+    }).apply(h6);
 
     this.v_output_layer = tf.layers.dense({
       units: 1,
       //activation: 'softmax',
-    }).apply(h5);
+    }).apply(h7);
     this.cModel = tf.model({inputs:this.xs, outputs:this.v_output_layer});
 
   }
@@ -150,8 +168,8 @@ class Critic{
     this.optimizer.minimize(() => this.loss(this.predict_v( this.s ), v_));
   }
   loss(v, v_){
-    console.log("v_:");
-    v_.print();
+    //console.log("v_:");
+    //v_.print();
     const loss = this.get_td_error(v, v_).square().mean();
     return loss;
   }
