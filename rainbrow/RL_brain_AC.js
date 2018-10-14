@@ -3,7 +3,6 @@
 class Actor{
   constructor(){
     this.action;
-
     this.s;
     this.a;
     this.TD_error;
@@ -21,7 +20,7 @@ class Actor{
       activation: activation,
       inputShape: [features_num],
     }).apply(this.xs);
-    
+
     let h2 = tf.layers.dense({ units: units_num, activation: activation, }).apply(h1);
     let h3 = tf.layers.dense({ units: units_num, activation: activation, }).apply(h2);
     let h4 = tf.layers.dense({ units: units_num, activation: activation, }).apply(h3);
@@ -29,15 +28,15 @@ class Actor{
     let h6 = tf.layers.dense({ units: units_num, activation: activation, }).apply(h5);
     let h7 = tf.layers.dense({ units: units_num, activation: activation, }).apply(h6);
     let h8 = tf.layers.dense({ units: units_num, activation: activation, }).apply(h7);
-    let h9 = tf.layers.dense({ units: units_num, activation: activation, }).apply(h8);
-    let h10 = tf.layers.dense({ units: units_num, activation: activation, }).apply(h9);
-    let h11 = tf.layers.dense({ units: units_num, activation: activation, }).apply(h10);
-    let h12 = tf.layers.dense({ units: units_num, activation: activation, }).apply(h11);
+    //let h9 = tf.layers.dense({ units: units_num, activation: activation, }).apply(h8);
+    //let h10 = tf.layers.dense({ units: units_num, activation: activation, }).apply(h9);
+    //let h11 = tf.layers.dense({ units: units_num, activation: activation, }).apply(h10);
+    //let h12 = tf.layers.dense({ units: units_num, activation: activation, }).apply(h11);
 
     this.acts_prob = tf.layers.dense({
       units: action_num,
       activation: 'softmax',
-    }).apply(h12);
+    }).apply(h8);
     this.aModel = tf.model({inputs:this.xs, outputs:this.acts_prob});
 
   }
@@ -47,8 +46,12 @@ class Actor{
       let observation = tf.tensor([observation_]);
       let probs = this.predict_acts_prob(observation);
       //console.log("probs:")
-      //probs.print();
-      this.action = tf.multinomial(probs,1).dataSync()[0];
+      probs.print();
+      if(goal<20){
+        this.action = tf.multinomial(probs,1).dataSync()[0];
+      }else{
+        this.action = tf.multinomial(tf.mul(probs,10),1).dataSync()[0];
+      }
     });
     return this.action;
   }
@@ -71,9 +74,10 @@ class Actor{
     let indices = tf.tensor1d([this.a], 'int32');
     //console.log("indices:");
     //indices.print();
-    const log_prob = tf.log( this.predict_acts_prob( s ).gather(indices,1).add(0.00001) );
-    this.exp_v = log_prob.mul(this.TD_error).mean().mul(-1);
-    return this.exp_v;
+    const log_prob = tf.log( this.predict_acts_prob( s ).gather(indices,1).add(0.00000000001) );
+    const exp_v = log_prob.mul(this.TD_error).mean().mul(-1);
+    this.exp_v = exp_v.dataSync()[0];
+    return exp_v;
   }
 
   async train(){
@@ -87,7 +91,6 @@ class Critic{
   constructor(){
     this.TD_error = tf.scalar(0);
     this.loss_value;
-
     this.s;
     this.s_;
     this.v;
@@ -113,15 +116,15 @@ class Critic{
     let h6 = tf.layers.dense({ units: units_num, activation: activation, }).apply(h5);
     let h7 = tf.layers.dense({ units: units_num, activation: activation, }).apply(h6);
     let h8 = tf.layers.dense({ units: units_num, activation: activation, }).apply(h7);
-    let h9 = tf.layers.dense({ units: units_num, activation: activation, }).apply(h8);
-    let h10 = tf.layers.dense({ units: units_num, activation: activation, }).apply(h9);
-    let h11 = tf.layers.dense({ units: units_num, activation: activation, }).apply(h10);
-    let h12 = tf.layers.dense({ units: units_num, activation: activation, }).apply(h11);
+    //let h9 = tf.layers.dense({ units: units_num, activation: activation, }).apply(h8);
+    //let h10 = tf.layers.dense({ units: units_num, activation: activation, }).apply(h9);
+    //let h11 = tf.layers.dense({ units: units_num, activation: activation, }).apply(h10);
+    //let h12 = tf.layers.dense({ units: units_num, activation: activation, }).apply(h11);
 
     this.v_output_layer = tf.layers.dense({
       units: 1,
       //activation: 'softmax',
-    }).apply(h12);
+    }).apply(h8);
     this.cModel = tf.model({inputs:this.xs, outputs:this.v_output_layer});
 
   }
@@ -140,7 +143,7 @@ class Critic{
     //console.log("s_:");
     //console.log(this.predict_v(this.s_));
     const v_ = this.predict_v(this.s_);
-
+    this.v_v = v_.dataSync()[0];
     this.optimizer.minimize(() => this.loss(this.predict_v( this.s ), v_));
   }
   loss(v, v_){

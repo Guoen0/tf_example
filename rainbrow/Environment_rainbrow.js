@@ -19,8 +19,9 @@ class Environment{
     this.reward = 0;
     this.state = new Array();
     this.state_next = new Array();
-    this.life = 0;
-    this.maxLife = 0;
+    this.satiety = 0;
+    this.goal = 0;
+    this.maxGoal = 0;
     this.action = 0;
     this.action_count = 0;
     this.is_dead = false;
@@ -28,8 +29,8 @@ class Environment{
   }
   init(){
     for (let i = 0; i < this.enemy_num; i++){
-      //this.enemies[i][0] = random(this.enemy_width/2, width-this.enemy_width/2);
-      this.enemies[i][0] = this.enemy_width/2;
+      this.enemies[i][0] = random(this.enemy_width/2, width-this.enemy_width/2);
+      //this.enemies[i][0] = this.enemy_width/2;
       this.enemies[i][1] = this.grid_height/2 + i*this.grid_height*2;
 
       let dir;
@@ -44,13 +45,14 @@ class Environment{
     this.is_dead = false;
     this.action_count = 0;
     this.reward = 0;
-    this.life = 0;
+    this.satiety = 0;
+    this.goal = 0;
     this.judgment();
     this.get_state_next();
     this.state = this.state_next;
   }
   get_random_speed(){
-    return random(width/60/2, width/60/4);
+    return random(width/60/4, width/60/6);
   }
   init_food(){
     this.food[0] = width/2;
@@ -58,14 +60,14 @@ class Environment{
   }
 
   update(){
-    //this.move_enemies();
+    this.move_enemies();
     this.move_agent();
     this.edge();
     this.judgment();
     this.get_state_next();
     this.draw();
-    this.life += 1/fr;
-    if(this.maxLife <= this.life){this.maxLife = this.life};
+
+    if(this.maxGoal <= this.goal){this.maxGoal = this.goal};
   }
   move_enemies() {
     for (let i = 0; i < this.enemy_num; i++){
@@ -73,7 +75,7 @@ class Environment{
     }
   }
   move_agent(){
-    this.agent[1] += (this.action-1) * width/60/0.8;
+    this.agent[1] += (this.action-0.5)*2 * width/60/1;
   }
 
   edge(){
@@ -104,30 +106,24 @@ class Environment{
   get_state_next(){
     this.state_next = new Array();
     for (let i = 0; i < this.enemy_num; i++){
-      for (let j = 0; j < this.enemy_params; j++){
-        this.state_next.push(this.enemies[i][j]);
-      }
+
+        this.state_next.push(this.enemies[i][3]);
+
     }
-    this.state_next.push(this.food[1]);
     this.state_next.push(this.food[2]);
     this.state_next.push(this.agent[1]);
   }
 
   ///////////////////////////////////////////////////////////////////////
   judgment(){
-/*
-    if (this.action == 1) {
-      this.reward -= 0.02;
-    } else {
-      this.reward -= 0.01;
-    }
-*/
-    this.reward -= 0.04;
-    let dist_f = abs(this.food[1] - this.agent[1]);
+    let dist_f_abs = abs(this.food[1] - this.agent[1]);
+    let dist_f = this.food[1] - this.agent[1];
     this.food[2] = dist_f;
-    this.reward += (1 - dist_f/height)*0.05;
-    if(dist_f <= this.food_width/2+this.agent_width/2){
-      this.reward += 5;
+    this.reward = (0 - dist_f_abs/height)*0.1;
+    if(dist_f_abs <= this.food_width/2+this.agent_width/2){
+      this.reward = 0.5;
+      this.satiety += 10;
+      this.goal += 1;
       this.init_food();
     }
 
@@ -135,18 +131,23 @@ class Environment{
       let dist_e = pow((this.enemies[i][0] - this.agent[0]), 2) + pow((this.enemies[i][1] - this.agent[1]), 2);
       this.enemies[i][3] = dist_e;
       if(dist_e <= pow(this.enemy_width/2+this.agent_width/2, 2)){
+        this.reward = -0.2;
         this.go_dead();
       }
     }
 
-    if(this.reward <= -10){
+    if(this.satiety <= -10){
       this.go_dead();
+    } else if(this.satiety > -10){
+      this.satiety -= 0.02;
+    }
+    if(this.satiety > 10){
+      this.satiety = 10;
     }
 
   }
 /////////////////////////////////////////////////////////////////////////
   go_dead(){
-    //this.reward = -50;
     this.is_dead = true;
     this.death += 1;
     background('red');

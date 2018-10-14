@@ -3,25 +3,29 @@ let num = 3;
 let env;
 let step = 0;
 let game_step = 1;
-let start_l_step = 0;
+let start_l_step = 1;
 
-let lr = 0.005;
+let lr = 0.001;
 let GAMMA = 0.9;
-let epsilon = 0.9;
-let features_num = num*4 + 2 + 1;
-let action_num = 3;
-let units_num = 64;
-let activation = 'elu';
+//let epsilon = 0.9;
+let features_num = 2 + num;
+let action_num = 2;
+let units_num = 16;
+let activation = 'sigmoid';
 
 RL_A = new Actor();
 RL_C = new Critic();
 let g_td_error;
+let goal;
 
 let rewardP;
-let lifeP;
-let maxLifeP;
+let satietyP;
+let goalP;
+let maxGoalP;
 let deathP;
 let td_error_P;
+let exp_v_P;
+let v_v_P;
 let button_MP;
 let button_RP;
 let button_dontL;
@@ -49,10 +53,13 @@ function setup() {
   button_S = createButton("STOP");
   button_S.mousePressed(stop_);
   rewardP = createP("Reward: 0");
-  lifeP = createP("Life: 0");
-  maxLifeP = createP("MaxLife: 0");
+  satietyP = createP("satiety: 0");
+  goalP = createP("goal: 0");
+  maxGoalP = createP("maxGoal: 0");
   deathP = createP("Death: 0");
   td_error_P = createP("TD_error: 0");
+  v_v_P = createP("v_: 0");
+  exp_v_P = createP("exp_v: 0");
 }
 
 function draw() {
@@ -84,11 +91,15 @@ function draw() {
 
 
     // print
-    rewardP.html("Reward: " + env.reward.toFixed(1));
-    lifeP.html("Life: " + env.life.toFixed(1));
-    maxLifeP.html("MaxLife: " + env.maxLife.toFixed(1));
-    deathP.html("Death :" + env.death);
-    td_error_P.html("TD_error :" + g_td_error);
+    rewardP.html("  Reward: " + env.reward.toFixed(2));
+    satietyP.html("  satiety: " + env.satiety.toFixed(1));
+    goalP.html("  goal: " + env.goal);
+    goal = env.goal;
+    maxGoalP.html("  maxGoal: " + env.maxGoal);
+    deathP.html("  Death :" + env.death);
+    td_error_P.html("  TD_error :" + g_td_error);
+    exp_v_P.html("  exp_vr: " + RL_A.exp_v);
+    v_v_P.html("  v_: " + RL_C.v_v);
     step += 1;
   }
 
