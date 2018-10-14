@@ -2,15 +2,15 @@ let num = 3;
 
 let env;
 let step = 0;
-let game_step = 2;
+let game_step = 1;
 let start_l_step = 0;
 
-let lr = 0.01;
+let lr = 0.005;
 let GAMMA = 0.9;
 let epsilon = 0.9;
 let features_num = num*4 + 2 + 1;
 let action_num = 3;
-let units_num = 512;
+let units_num = 64;
 let activation = 'elu';
 
 RL_A = new Actor();
@@ -57,8 +57,6 @@ function setup() {
 
 function draw() {
   if (!is_stop){
-
-
     if(!is_human){
       if(step % game_step == 0){
         env.step(RL_A.choose_action(env.state));

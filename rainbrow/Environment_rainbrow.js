@@ -28,7 +28,8 @@ class Environment{
   }
   init(){
     for (let i = 0; i < this.enemy_num; i++){
-      this.enemies[i][0] = random(this.enemy_width/2, width-this.enemy_width/2);
+      //this.enemies[i][0] = random(this.enemy_width/2, width-this.enemy_width/2);
+      this.enemies[i][0] = this.enemy_width/2;
       this.enemies[i][1] = this.grid_height/2 + i*this.grid_height*2;
 
       let dir;
@@ -49,7 +50,7 @@ class Environment{
     this.state = this.state_next;
   }
   get_random_speed(){
-    return random(width/60/1, width/60/4);
+    return random(width/60/2, width/60/4);
   }
   init_food(){
     this.food[0] = width/2;
@@ -57,7 +58,8 @@ class Environment{
   }
 
   update(){
-    this.move_();
+    //this.move_enemies();
+    this.move_agent();
     this.edge();
     this.judgment();
     this.get_state_next();
@@ -65,13 +67,14 @@ class Environment{
     this.life += 1/fr;
     if(this.maxLife <= this.life){this.maxLife = this.life};
   }
-  move_() {
+  move_enemies() {
     for (let i = 0; i < this.enemy_num; i++){
       this.enemies[i][0] += this.enemies[i][2];
     }
-    this.agent[1] += (this.action-1) * width/60/2;
   }
-
+  move_agent(){
+    this.agent[1] += (this.action-1) * width/60/0.8;
+  }
 
   edge(){
     for (let i = 0; i < this.enemy_num; i++){
@@ -108,22 +111,21 @@ class Environment{
     this.state_next.push(this.food[1]);
     this.state_next.push(this.food[2]);
     this.state_next.push(this.agent[1]);
-
   }
-
-
 
   ///////////////////////////////////////////////////////////////////////
   judgment(){
+/*
     if (this.action == 1) {
       this.reward -= 0.02;
     } else {
       this.reward -= 0.01;
     }
-
-
+*/
+    this.reward -= 0.04;
     let dist_f = abs(this.food[1] - this.agent[1]);
     this.food[2] = dist_f;
+    this.reward += (1 - dist_f/height)*0.05;
     if(dist_f <= this.food_width/2+this.agent_width/2){
       this.reward += 5;
       this.init_food();
@@ -137,14 +139,14 @@ class Environment{
       }
     }
 
-    if(this.reward <= -5){
+    if(this.reward <= -10){
       this.go_dead();
     }
 
   }
-
+/////////////////////////////////////////////////////////////////////////
   go_dead(){
-    this.reward = -50;
+    //this.reward = -50;
     this.is_dead = true;
     this.death += 1;
     background('red');
