@@ -18,17 +18,17 @@ class Actor{
 
     let h1 = tf.layers.dense({
       units: units_num,
-      activation: activation,
+      activation: activation_A,
       inputShape: [features_num],
     }).apply(this.xs);
 
-    let h2 = tf.layers.dense({ units: units_num, activation: activation, }).apply(h1);
-    let h3 = tf.layers.dense({ units: units_num, activation: activation, }).apply(h2);
-    let h4 = tf.layers.dense({ units: units_num, activation: activation, }).apply(h3);
+    let h2 = tf.layers.dense({ units: units_num, activation: activation_A, }).apply(h1);
+    let h3 = tf.layers.dense({ units: units_num, activation: activation_A, }).apply(h2);
+    let h4 = tf.layers.dense({ units: units_num, activation: activation_A, }).apply(h3);
 
     this.acts_prob = tf.layers.dense({
       units: action_num,
-      activation: 'softmax',
+      activation: activation_A_last,
     }).apply(h4);
     this.aModel = tf.model({inputs:this.xs, outputs:this.acts_prob});
 
@@ -99,13 +99,13 @@ class Critic{
     this.xs = tf.input({shape:[features_num]});
     let h1 = tf.layers.dense({
       units: units_num,
-      activation: activation,
+      activation: activation_C,
       inputShape: [features_num],
     }).apply(this.xs);
 
-    let h2 = tf.layers.dense({ units: units_num, activation: activation, }).apply(h1);
-    let h3 = tf.layers.dense({ units: units_num, activation: activation, }).apply(h2);
-    let h4 = tf.layers.dense({ units: units_num, activation: activation, }).apply(h3);
+    let h2 = tf.layers.dense({ units: units_num, activation: activation_C, }).apply(h1);
+    let h3 = tf.layers.dense({ units: units_num, activation: activation_C, }).apply(h2);
+    let h4 = tf.layers.dense({ units: units_num, activation: activation_C, }).apply(h3);
 
     this.v_output_layer = tf.layers.dense({
       units: 1,

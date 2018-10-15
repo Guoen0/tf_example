@@ -1,4 +1,4 @@
-let num = 3;
+let num = 4;
 
 let env;
 let step = 0;
@@ -8,10 +8,12 @@ let start_l_step = 1;
 let lr = 0.002;
 let GAMMA = 0.9;
 //let epsilon = 0.9;
-let features_num = 2;
+let features_num = 2+num;
 let action_num = 2;
-let units_num = 16;
-let activation = 'sigmoid';
+let units_num = 32;
+let activation_A = 'elu';
+let activation_A_last = 'softplus';
+let activation_C = 'elu';
 
 RL_A = new Actor();
 RL_C = new Critic();
@@ -73,9 +75,7 @@ function draw() {
       }
     }
 
-
     env.update();
-
 
     if(is_train){
       if( step > start_l_step && step % game_step == 0){
@@ -88,13 +88,10 @@ function draw() {
 
     env.state = env.state_next;
 
-    if(env.is_dead){
-      env.init();
-    }
-
+    if(env.is_dead){env.init();}
 
     // print
-    rewardP.html("  Reward: " + env.reward.toFixed(2));
+    rewardP.html("  Reward: " + env.reward.toFixed(3));
     satietyP.html("  satiety: " + env.satiety.toFixed(1));
     goalP.html("  goal: " + env.goal);
     goal = env.goal;
@@ -108,9 +105,7 @@ function draw() {
     }
     step += 1;
   }
-
     //console.log("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
-
 }
 
 
