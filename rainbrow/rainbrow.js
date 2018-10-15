@@ -5,12 +5,12 @@ let step = 0;
 let game_step = 1;
 let start_l_step = 1;
 
-let lr = 0.001;
+let lr = 0.002;
 let GAMMA = 0.9;
 //let epsilon = 0.9;
-let features_num = 2 + num;
+let features_num = 2;
 let action_num = 2;
-let units_num = 32;
+let units_num = 16;
 let activation = 'sigmoid';
 
 RL_A = new Actor();
@@ -65,6 +65,7 @@ function setup() {
 }
 
 function draw() {
+
   if (!is_stop){
     if(!is_human){
       if(step % game_step == 0){
@@ -108,7 +109,7 @@ function draw() {
     step += 1;
   }
 
-  //console.log("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
+    //console.log("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
 
 }
 

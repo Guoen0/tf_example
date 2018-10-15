@@ -25,19 +25,11 @@ class Actor{
     let h2 = tf.layers.dense({ units: units_num, activation: activation, }).apply(h1);
     let h3 = tf.layers.dense({ units: units_num, activation: activation, }).apply(h2);
     let h4 = tf.layers.dense({ units: units_num, activation: activation, }).apply(h3);
-    let h5 = tf.layers.dense({ units: units_num, activation: activation, }).apply(h4);
-    let h6 = tf.layers.dense({ units: units_num, activation: activation, }).apply(h5);
-    let h7 = tf.layers.dense({ units: units_num, activation: activation, }).apply(h6);
-    let h8 = tf.layers.dense({ units: units_num, activation: activation, }).apply(h7);
-    //let h9 = tf.layers.dense({ units: units_num, activation: activation, }).apply(h8);
-    //let h10 = tf.layers.dense({ units: units_num, activation: activation, }).apply(h9);
-    //let h11 = tf.layers.dense({ units: units_num, activation: activation, }).apply(h10);
-    //let h12 = tf.layers.dense({ units: units_num, activation: activation, }).apply(h11);
 
     this.acts_prob = tf.layers.dense({
       units: action_num,
       activation: 'softmax',
-    }).apply(h8);
+    }).apply(h4);
     this.aModel = tf.model({inputs:this.xs, outputs:this.acts_prob});
 
   }
@@ -49,7 +41,7 @@ class Actor{
       //console.log("probs:")
       this.action_prb[0] = probs.dataSync()[0];
       this.action_prb[1] = probs.dataSync()[1];
-      if(goal<20){
+      if(goal<50){
         this.action = tf.multinomial(probs,1).dataSync()[0];
       }else{
         this.action = tf.multinomial(tf.mul(probs,10),1).dataSync()[0];
@@ -114,19 +106,11 @@ class Critic{
     let h2 = tf.layers.dense({ units: units_num, activation: activation, }).apply(h1);
     let h3 = tf.layers.dense({ units: units_num, activation: activation, }).apply(h2);
     let h4 = tf.layers.dense({ units: units_num, activation: activation, }).apply(h3);
-    let h5 = tf.layers.dense({ units: units_num, activation: activation, }).apply(h4);
-    let h6 = tf.layers.dense({ units: units_num, activation: activation, }).apply(h5);
-    let h7 = tf.layers.dense({ units: units_num, activation: activation, }).apply(h6);
-    let h8 = tf.layers.dense({ units: units_num, activation: activation, }).apply(h7);
-    //let h9 = tf.layers.dense({ units: units_num, activation: activation, }).apply(h8);
-    //let h10 = tf.layers.dense({ units: units_num, activation: activation, }).apply(h9);
-    //let h11 = tf.layers.dense({ units: units_num, activation: activation, }).apply(h10);
-    //let h12 = tf.layers.dense({ units: units_num, activation: activation, }).apply(h11);
 
     this.v_output_layer = tf.layers.dense({
       units: 1,
       //activation: 'softmax',
-    }).apply(h8);
+    }).apply(h4);
     this.cModel = tf.model({inputs:this.xs, outputs:this.v_output_layer});
 
   }

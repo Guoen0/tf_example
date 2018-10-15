@@ -26,13 +26,17 @@ class Environment{
     this.action_count = 0;
     this.is_dead = false;
     this.death = 0;
+
+    this.dist_es = new Array();
+
+    this.enemies_move = false;
+    this.edge_dead = false;
   }
   init(){
     for (let i = 0; i < this.enemy_num; i++){
-      this.enemies[i][0] = random(this.enemy_width/2, width-this.enemy_width/2);
-      //this.enemies[i][0] = this.enemy_width/2;
+      if(this.enemies_move){this.enemies[i][0] = random(this.enemy_width/2, width-this.enemy_width/2);
+      } else {this.enemies[i][0] = this.enemy_width/2;}
       this.enemies[i][1] = this.grid_height/2 + i*this.grid_height*2;
-
       let dir;
       if( random(1) < 0.5 ){ dir = 1 } else { dir = -1 };
       this.enemies[i][2] =  this.get_random_speed() * dir;
@@ -60,7 +64,7 @@ class Environment{
   }
 
   update(){
-    this.move_enemies();
+    if(this.enemies_move){this.move_enemies();}
     this.move_agent();
     this.edge();
     this.judgment();
@@ -102,45 +106,62 @@ class Environment{
     this.state_next = new Array();
     for (let i = 0; i < this.enemy_num; i++){
 
-        this.state_next.push(this.enemies[i][3]);
+        //this.state_next.push(this.enemies[i][3]/height);
 
     }
-    this.state_next.push(this.food[2]);
-    this.state_next.push(this.agent[1]);
+    this.state_next.push(this.food[2]/height);
+    this.state_next.push((this.agent[1]-height/2)/(height/2));
   }
 
   ///////////////////////////////////////////////////////////////////////
   judgment(){
+    //food
     let dist_f_abs = abs(this.food[1] - this.agent[1]);
     let dist_f = this.food[1] - this.agent[1];
     this.food[2] = dist_f;
-    this.reward = (0 - dist_f_abs/height)*0.1;
+    let reward_f = (0 - dist_f_abs/height)*0.1;
     if(dist_f_abs <= this.food_width/2+this.agent_width/2){
-      this.reward = 0.2;
+      reward_f = 0.02;
       this.satiety += 10;
       this.goal += 1;
       this.init_food();
     }
-
+    //enemy
+    let reward_e = 0;
+  /*
     for(let i = 0; i < this.enemy_num; i++){
       let dist_e = pow((this.enemies[i][0] - this.agent[0]), 2) + pow((this.enemies[i][1] - this.agent[1]), 2);
       this.enemies[i][3] = dist_e;
+      this.dist_es[i] = dist_e;
       if(dist_e <= pow(this.enemy_width/2+this.agent_width/2, 2)){
-        this.reward = -0.5;
+        reward_e = -0.2;
         this.go_dead();
       }
     }
+  */
 
+    //edge
     if(this.agent[1] <= this.agent_width/2){
-      this.reward = -0.5;
-      this.go_dead();
+      if(this.edge_dead){
+        this.reward = -0.5;
+        this.go_dead();
+      } else {
+        this.agent[1] = this.agent_width/2;
+      }
     }
     if(this.agent[1] >= height-this.agent_width/2){
-      this.reward = -0.5;
-      this.go_dead();
+      if(this.edge_dead){
+        this.reward = -0.5;
+        this.go_dead();
+      } else {
+        this.agent[1] = height-this.agent_width/2;
+      }
     }
 
+    // all reward
+    this.reward = reward_f + reward_e;
 
+    //satiety
     if(this.satiety <= -10){
       this.go_dead();
     } else if(this.satiety > -10){
