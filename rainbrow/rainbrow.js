@@ -1,4 +1,4 @@
-let num = 4;
+let num = 8;
 
 let env;
 let step = 0;
